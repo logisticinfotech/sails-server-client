@@ -28,6 +28,88 @@ module.exports.routes = {
     view: 'pages/homepage'
   },
 
+  "post /user": {
+    controller: "UserController",
+    action: "createUser",
+  },
+  "get /user/:userid": {
+    controller: "UserController",
+    action: "getUser",
+  },
+  "get /userlist": {
+    controller: "UserController",
+    action: "getUsers",
+  },
+  "get /onlineuser/:userid": {
+    controller: "UserController",
+    action: "getOnlineUsers",
+  },
+
+
+  "post /group": {
+    controller: "GroupController",
+    action: "createGroup",
+  },
+  "get /group/:groupid": {
+    controller: "GroupController",
+    action: "getGroup",
+  },
+  "get /grouplist": {
+    controller: "GroupController",
+    action: "getGroups",
+  },
+  "put /group": {
+    controller: "GroupController",
+    action: "joinGroup",
+  },
+  "put /group/leave": {
+    controller: "GroupController",
+    action: "leaveGroup",
+  },
+
+
+
+  /****** Chat Routes ******/
+  "post /chat/privatemessage": {
+    controller: "ChatController",
+    action: "privateMessage",
+  },
+  "post /chat/privatemessagestatus": {
+    controller: "ChatController",
+    action: "privateMessageStatus",
+  },
+  "post /chat/multiplemessagestatus": {
+    controller: "ChatController",
+    action: "multipleMessageStatus",
+  },
+  "post /chat/multiplemessagestatusupdate": {
+    controller: "ChatController",
+    action: "multipleMessageStatusforUser",
+  },
+  "post /chat/usertyping": {
+    controller: "ChatController",
+    action: "userTyping",
+  },
+  "post /chat/detail": {
+    controller: "ChatController",
+    action: "chatDetail",
+  },
+  "post /chat/history": {
+    controller: "ChatController",
+    action: "chatHistory",
+  },
+  "post /chat/groupmessage": {
+    controller: "ChatController",
+    action: "groupMessage",
+  },
+  "post /chat/grouptyping": {
+    controller: "ChatController",
+    action: "groupMessageTyping",
+  },
+  "post /chat/groupmessagedetail": {
+    controller: "ChatController",
+    action: "getGroupMessage",
+  },
   /***************************************************************************
   *                                                                          *
   * More custom routes here...                                               *
