@@ -114,4 +114,121 @@ module.exports = {
       });
     });
   },
+  updateUserStatus: function(req, res) {
+    var userid = req.param("userid");
+    sails.log("updateUserStatus");
+    if (!userid)
+      return res.badRequest({
+        data: "",
+        message: sails.config.localised.commonvalidation.useridrequired,
+      });
+
+    var reqData = eval(req.body);
+    var socketId = sails.sockets.getId(req.socket);
+    var updatedUser;
+    var sentmessagecount = 0;
+    var isSocketFind = false;
+
+    reqData.socketid = socketId;
+
+    delete reqData.userid;
+    var userStatus;
+    var chatAll;
+
+    async.series(
+      [
+        function(updateusercb) {
+          User.update(
+            {
+              id: userid,
+            },
+            reqData
+          ).exec(function afterwards(err, user) {
+            if (err) {
+              return updateusercb(err);
+            }
+
+            if (typeof user != "undefined" && user.length > 0) {
+              sails.log("User exist");
+              if (req.isSocket) {
+                updatedUser = user[0];
+                User.subscribe(req, _.pluck(user, "id"), ["message", "update"]);
+
+                setTimeout(function() {
+                  User.publishUpdate(userid, {
+                    actions: "userstatusupdate",
+                    actionsdata: updatedUser,
+                  });
+                  updateusercb();
+                }, 1000);
+              } else {
+                console.log("user update", user);
+                  updateusercb();
+              }
+            } else {
+              sails.log("User not found");
+              var error = new Error({
+                message: sails.config.localised.user.usernotexist,
+              });
+              error.status = 500;
+              updateusercb(error);
+            }
+          });
+        },
+        function(subscribecb) {
+          var query =
+            "SELECT * FROM user WHERE FIND_IN_SET(id, (SELECT GROUP_CONCAT(userid) FROM `contact` WHERE contactuserid = " +
+            userid +
+            " AND userid IS NOT NULL))";
+          User.query(query, [], function(err, users) {
+            if (err) {
+              subscribecb(err);
+            }
+            // sails.log("user list", users);
+            if (typeof users != "undefined" && users.length > 0) {
+              if (req.isSocket) {
+                User.subscribe(req, _.pluck(users, "id"), ["destroy", "update"]);
+              }
+            }
+            subscribecb();
+          });
+        },
+        function(subscribegroupcb) {
+          var query =
+            "SELECT * FROM usergroup WHERE FIND_IN_SET(id, (SELECT GROUP_CONCAT(`usergroup_users`) FROM `user_groups__usergroup_users` WHERE `user_groups` = " +
+            userid +
+            " ))";
+          UserGroup.query(query, [], function(err, groups) {
+            if (err) {
+              subscribegroupcb(err);
+            }
+            if (typeof groups != "undefined" && groups.length > 0) {
+              if (req.isSocket) {
+                UserGroup.subscribe(req, _.pluck(groups, "id"), [
+                  "message",
+                  "destroy",
+                  "update",
+                  "add:users",
+                  "remove:users",
+                ]);
+              }
+            }
+            subscribegroupcb();
+          });
+        },
+      ],
+      function(err, finalresult) {
+        if (err)
+          res.serverError({
+            message: sails.config.localised.responses.somethingwentwrong,
+            err,
+          });
+        else
+          res.send({
+            data: updatedUser,
+            message: sails.config.localised.user.userupdatesucess,
+          });
+      }
+    );
+  },
 };
