@@ -99,18 +99,6 @@ module.exports.routes = {
     controller: "ChatController",
     action: "chatHistory",
   },
-  "post /chat/groupmessage": {
-    controller: "ChatController",
-    action: "groupMessage",
-  },
-  "post /chat/grouptyping": {
-    controller: "ChatController",
-    action: "groupMessageTyping",
-  },
-  "post /chat/groupmessagedetail": {
-    controller: "ChatController",
-    action: "getGroupMessage",
-  },
   /***************************************************************************
    *                                                                          *
    * More custom routes here...                                               *
